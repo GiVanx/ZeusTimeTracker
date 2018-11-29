@@ -1,0 +1,1 @@
+Double-click './ZeusTimeTracker.bat' to start the program.
