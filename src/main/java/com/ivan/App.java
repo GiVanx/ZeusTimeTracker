@@ -105,7 +105,6 @@ public class App {
         System.out.println("Mins: " + statistic.getMinutes());
     }
 
-
     public Time getTimeStatistic(InputStream zeusStream) {
 
         int hours = 0;
@@ -120,47 +119,46 @@ public class App {
 
                 timeInfo = getTimeInfo(RegexType.CARRY_FORWARD_REGEX, line);
 
+                int dh = 0, dm = 0;
+
                 if (timeInfo != null) {
-                    hours += timeInfo.getCarryForward().getHours();
-                    minutes += timeInfo.getCarryForward().getMinutes();
+                    dh = timeInfo.getCarryForward().getHours();
+                    dm = timeInfo.getCarryForward().getMinutes();
                     System.out.println("NOTE: You've got a CARRY FORWARD PERIOD of " +
                             timeInfo.getCarryForward().getHours() + "h " +
                             timeInfo.getCarryForward().getMinutes() + "m.");
+
+                    if (dm != 0 && dh < 0) {
+                        dm = 60 - dm;
+                        dh = dh - (int) Math.signum(dh);
+                        dm = -dm;
+                    }
                 }
 
                 timeInfo = getTimeInfo(RegexType.GROSS_TARGET_REGEX, line);
 
                 if (timeInfo != null) {
+                    dh = timeInfo.getGross().getHours() - timeInfo.getTarget().getHours();
+                    dm = timeInfo.getGross().getMinutes();
 
-                    int grossHours = timeInfo.getGross().getHours();
-                    int grossMinutes = timeInfo.getGross().getMinutes();
-                    int targetHours = timeInfo.getTarget().getHours();
-                    int targetMinutes = timeInfo.getTarget().getMinutes();
-                    int diffMinutes = 0, diffHours = 0;
-
-                    if (grossHours < targetHours) {
-                        if (targetMinutes < grossMinutes) {
-                            targetMinutes += 60;
-                            targetHours -= 1;
-                        }
-                    } else if (grossHours > targetHours) {
-                        if (grossMinutes < targetMinutes) {
-                            grossMinutes += 60;
-                            grossHours -= 1;
-                        }
+                    if (dm != 0 && dh < 0) {
+                        dm = 60 - dm;
+                        dh = dh - (int) Math.signum(dh);
+                        dm = -dm;
                     }
-
-                    diffMinutes = grossMinutes - targetMinutes;
-                    diffHours = grossHours - targetHours;
-
-                    minutes += diffMinutes;
-                    hours += diffHours;
                 }
 
-                hours += minutes / 60;
-                minutes = minutes % 60;
+                hours += dh;
+                minutes += dm;
             }
 
+            hours += minutes / 60;
+            minutes %= 60;
+
+            if (minutes < 0 && hours != 0) {
+                hours -= Math.signum(hours);
+                minutes = 60 - Math.abs(minutes);
+            }
 
             zeusStream.close();
         } catch (IOException e) {
