@@ -6,9 +6,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.io.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,6 +114,7 @@ public class App {
             String line;
             while ((line = br.readLine()) != null) {
 
+                System.out.println(line);
                 TimeInfo timeInfo;
 
                 timeInfo = getTimeInfo(RegexType.CARRY_FORWARD_REGEX, line);
@@ -124,9 +124,6 @@ public class App {
                 if (timeInfo != null) {
                     dh = timeInfo.getCarryForward().getHours();
                     dm = timeInfo.getCarryForward().getMinutes();
-                    System.out.println("NOTE: You've got a CARRY FORWARD PERIOD of " +
-                            timeInfo.getCarryForward().getHours() + "h " +
-                            timeInfo.getCarryForward().getMinutes() + "m.");
 
                     if (dm != 0 && dh < 0) {
                         dm = 60 - dm;
@@ -146,6 +143,7 @@ public class App {
                         dh = dh - (int) Math.signum(dh);
                         dm = -dm;
                     }
+
                 }
 
                 hours += dh;
@@ -155,11 +153,12 @@ public class App {
             hours += minutes / 60;
             minutes %= 60;
 
-            if (minutes < 0 && hours != 0) {
+            if (minutes < 0 && hours > 0) {
                 hours -= Math.signum(hours);
-                minutes = 60 - Math.abs(minutes);
+                minutes = -(60 - Math.abs(minutes));
             }
 
+            minutes = Math.abs(minutes);
             zeusStream.close();
         } catch (IOException e) {
             System.out.println(e);
